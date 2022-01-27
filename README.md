@@ -13,7 +13,7 @@ Mack et al. (in review). The length of stressor gradients affects observed multi
     
     b) the modelling results of the study ("02_Modelling_results.csv") and the file "02_Legend_Modelling_results.csv" specifying the column-headers.
 
-3) The folder "R_script" includes exemplary R-scripts on
+3) The folder "R_scripts" includes exemplary R-scripts on
 
     a) the initial linear regression analysis ("Linear_regression_example.html"), and
     
