@@ -1,0 +1,17 @@
+Column header;Description
+Case IDs;Unique identifier of analytical case (link to individual CaseID datasets)
+Study name;Name of the study
+Water category;Ecosystem type (lake, river, transitional, marine)
+R_Phytoplankton;"Phytoplankton as response organism group (""x""=yes, "" ""= no)"
+R_Benthic flora;"Benthic flora as response organism group (""x""=yes, "" ""= no)"
+R_Zooplankton;"Zooplankton as response organism group (""x""=yes, "" ""= no)"
+R_Benthic invertebrates;"Benthic invertebrates as response organism group (""x""=yes, "" ""= no)"
+R_Fish;"Fish as response organism group (""x""=yes, "" ""= no)"
+S_Nutrient;"Nutrients as stressor category (""x""=yes, "" ""=no)"
+S_Thermal;"Thermal stress as stressor category (""x""=yes, "" ""=no)"
+S_Chemical;"Physico-chemical stress as stressor category (""x""=yes, "" ""=no)"
+S_Morph;"Morphological alteration as stressor category (""x""=yes, "" ""=no)"
+S_Hydro;"Hydrological alteration as stressor category (""x""=yes, "" ""=no)"
+S_Toxic;"Toxicants as stressor category (""x""=yes, "" ""=no)"
+S_Light;"Light stress as stressor category (""x""=yes, "" ""=no)"
+Contact/Reference;Contact person or link to publication/online database for specific data. Please use the contact provided if you wish to use the data.

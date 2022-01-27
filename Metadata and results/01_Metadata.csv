@@ -1,0 +1,47 @@
+Case IDs;Study name;Water category;R_Phytoplankton;R_Benthic flora;R_Zooplankton;R_Benthic invertebrates;R_Fish;S_Nutrient;S_Thermal;S_Chemical;S_Morph;S_Hydro;S_Toxic;S_Light;Contact/Reference
+001-005;Lake Constance, DE (fish);Lake;x;;;;x;x;x;;;;;;Jan.Baer@lazbw.bwl.de
+007-010;Vansjø lake, NO;Lake;x;;;;;x;x;;;x;;;Couture et al. (2018)
+12;Lake monitoring, FI;Lake;;;;x;;x;;;;x;;;Jukka.Aroviita@syke.fi
+13;Fish-trait responses in French lakes, FR;Lake;;;;;x;x;x;;;;;;Bouraï et al. (2020)
+014-016;Northern lakes (phytoplankton), FI, NO, SE, UK;Lake;x;;;;;x;x;;;;;;Birk et al. (2020)
+037-038;Manuherikia, NZ (invertebrates);River;;;;x;;x;;;x;;;;Lange et al. (2014)
+040-044;Odense catchment, DK (invertebrates);River;;;;x;;x;x;;x;x;;;Graeber et al. (2014)
+045-049;Pinios catchment, GR;River;;;;x;;x;x;;;;;;Stefanidis et al. (2016)
+051-055;Pomahaka, NZ;River;;;;x;;x;;;x;;;;Ramezani et al. (2016)
+56;Ruhr catchment, DE;River;;;;x;;x;;;x;;;;Gieswein et al. (2017)
+057-063;Second order streams, NZ;River;;;;x;;x;;;x;;;;Matthaei et al. (2006)
+73;Odense catchment, DK (fish);River;;;;;x;;;x;;x;;;Graeber et al. (2014)
+74;Odense catchment, DK (macrophytes);River;;x;;;;;x;;;x;;;Graeber et al. (2014)
+75;Lepsämänjoki catchment, FI;River;x;;;;;x;x;;;;;;Rankinen et al. (2019)
+079-083;Thames catchment, UK;River;x;;;;;x;x;;;;;;Birk et al. (2020)
+084-088;Agricultural streams, NZ;River;;;;x;;x;;;x;;;;christoph.matthaei@otago.ac.nz
+89;Central European upland rivers (invertebrates);River;;;;x;;;;;x;;x;;Birk et al. (2020)
+91;EPA monitoring, freshwater, IE (invertebrates);River;;;;x;;x;;;;x;;;h.feeley@epa.ie
+93;European very large rivers (invertebrates);River;;;;x;;x;;;x;;;;Birk et al. (2018b)
+094-096;Multiple stressors in central European lowland rivers, EU;River;;;;x;;x;;;x;;;;Schinegger et al. (2013)
+97;Pesticides effects on invertebrates, FI, FR, DE;River;;;;x;;x;;;;;x;;Schäfer et al. (2013)
+098-100;Romanian rivers reference modelling, RO;River;;;;x;;x;;;;;x;;Birk et al. (2020)
+101-106;Sedimentation, NZ (invertebrates);River;;;;x;;x;;;x;;;;Magbauna et al. (2010)
+107-108;SPEAR index Sweden, SE;River;;;;x;;x;;;x;;x;;von der Ohe and Goedkoop (2012)
+110;Central European upland rivers (fish);River;;;;;x;x;;;;;x;;Birk et al. (2020)
+111;European very large rivers (fish);River;;;;;x;x;;;x;;;;Birk et al. (2018a)
+112-116;UK investigations (macrophytes);River;;x;;;;x;;;x;;;;Birk et al. (2020)
+117-121;EPA monitoring, freshwater, IE (phytobenthos);River;;x;;;;x;x;x;;x;;;B.Kennedy@epa.ie
+122-127;UK investigations (diatoms);River;;x;;;;x;;;x;;;;Birk et al. (2020)
+179;Hong Kong, CN (corals);Marine;;;;x;;x;;x;;;;;adam.sokolowski@ug.edu.pl
+182-184;Alicante, ES;Marine;;x;;;;;;x;;;;x;Yolanda.fernandez@ua.es
+186-195;Hong Kong, CN (phytoplankton);Marine;x;;;;;x;x;x;;;;;https://cd.epic.epd.gov.hk/EPICRIVER/marine/
+196-198;EPA monitoring, marine, IE (invertebrates);Marine;;;;x;;x;x;x;;;;;Louise.Healy@Marine.ie
+199-206;EPA monitoring, marine, IE (phytoplankton);Marine;x;;;;;x;x;x;;;;;G.McDermott@epa.ie
+236;Kiel, DE (phytoplankton);Marine;x;;;;;;x;x;;;;;N/A
+252;Southampton, US;Marine;;;;x;;;x;x;;;;;Stevens and Gobler (2018)
+287-288;Gulf of Riga, EE, (fish);Transitional;;;;;x;;x;x;x;x;;;Kotta et al. (2018)
+292-293;Nervion estuary, ES (fish);Transitional;;;;;x;x;;x;;;;;aborja@azti.es
+294-302;Baltic Sea monitoring (phytoplankton);Transitional;x;;;;;x;x;x;;;;;https://www.ices.dk/data/Pages/default.aspx
+304-306;Palmico Sound lagoon, US;Transitional;x;;;;;x;x;x;;;;;http://paerllab.web.unc.edu/projects/modmon/
+307-311;Gulf of Riga, EE (zooplankton);Transitional;;;x;;;x;x;x;x;;;;Kotta et al. (2018)
+312-320, 326;EPA monitoring, transitional, IE (invertebrates);Transitional;;;;x;;x;x;x;;;;;Louise.Healy@Marine.ie
+321-325;National Estuarine Dataset, NZ;Transitional;;;;x;;x;;;x;;x;;Berthelsen et al. (2020)
+327-336;Baltic Sea monitoring (fish);Transitional;;;;;x;x;x;x;;;;;https://www.ices.dk/data/Pages/default.aspx
+339-341;EPA monitoring, transitional, IE (phytoplankton);Transitional;x;;;;;x;x;x;;;;;G.McDermott@epa.ie
+342-352;National Estuarine Research Reserves monitoring, US;Transitional;x;;;;;x;x;x;;;;;https://coast.noaa.gov/nerrs/

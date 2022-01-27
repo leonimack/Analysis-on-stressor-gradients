@@ -1,0 +1,52 @@
+Column header;Description
+ID_case;Unique identifier of analytical case (link to individual CaseID datasets)
+Tot_N;Sample size of full gradient case
+Tot_effect;Multiple-stressor effect type of full gradient case
+Tot_b1;Regression coefficient of Stressor 1 variable resulting from linear regression analysis of the full gradient case
+Tot_b1_SE;Standard error value of Stressor 1 variable resulting from linear regression analysis of the full gradient case
+Tot_b1_p;Probability value of Stressor 1 variable resulting from linear regression analysis of the full gradient case
+Tot_b2;Regression coefficient of Stressor 2 variable resulting from linear regression analysis of the full gradient case
+Tot_b2_SE;Standard error value of Stressor 2 variable resulting from linear regression analysis of the full gradient case
+Tot_b2_p;Probability value of Stressor 2 variable resulting from linear regression analysis of the full gradient case
+Tot_b3;Regression coefficient of Stressor 3 variable resulting from linear regression analysis of the full gradient case
+Tot_b3_SE;Standard error value of Stressor 3 variable resulting from linear regression analysis of the full gradient case
+Tot_b3_p;Probability value of Stressor 3 variable resulting from linear regression analysis of the full gradient case
+Tot_R2;Marginal coefficient of determination resulting from linear regression analysis of the full gradient case
+Low_N;Sample size of lower gradient case
+Low_effect;Multiple-stressor effect type of lower gradient case
+Low_b1;Regression coefficient of Stressor 1 variable resulting from linear regression analysis of the lower gradient case
+Low_b1_SE;Standard error value of Stressor 1 variable resulting from linear regression analysis of the lower gradient case
+Low_b1_p;Probability value of Stressor 1 variable resulting from linear regression analysis of the lower gradient case
+Low_b2;Regression coefficient of Stressor 2 variable resulting from linear regression analysis of the lower gradient case
+Low_b2_SE;Standard error value of Stressor 2 variable resulting from linear regression analysis of the lower gradient case
+Low_b2_p;Probability value of Stressor 2 variable resulting from linear regression analysis of the lower gradient case
+Low_b3;Regression coefficient of Stressor 3 variable resulting from linear regression analysis of the lower gradient case
+Low_b3_SE;Standard error value of Stressor 3 variable resulting from linear regression analysis of the lower gradient case
+Low_b3_p;Probability value of Stressor 3 variable resulting from linear regression analysis of the lower gradient case
+Low_R2;Marginal coefficient of determination resulting from linear regression analysis of the lower gradient case
+Upp_N;Sample size of upper gradient case
+Upp_effect;Multiple-stressor effect type of upper gradient case
+Upp_b1;Regression coefficient of Stressor 1 variable resulting from linear regression analysis of the upper gradient case
+Upp_b1_SE;Standard error value of Stressor 1 variable resulting from linear regression analysis of the upper gradient case
+Upp_b1_p;Probability value of Stressor 1 variable resulting from linear regression analysis of the upper gradient case
+Upp_b2;Regression coefficient of Stressor 2 variable resulting from linear regression analysis of the upper gradient case
+Upp_b2_SE;Standard error value of Stressor 2 variable resulting from linear regression analysis of the upper gradient case
+Upp_b2_p;Probability value of Stressor 2 variable resulting from linear regression analysis of the upper gradient case
+Upp_b3;Regression coefficient of Stressor 3 variable resulting from linear regression analysis of the upper gradient case
+Upp_b3_SE;Standard error value of Stressor 3 variable resulting from linear regression analysis of the upper gradient case
+Upp_b3_p;Probability value of Stressor 3 variable resulting from linear regression analysis of the upper gradient case
+Upp_R2;Marginal coefficient of determination resulting from linear regression analysis of the upper gradient case
+Ecosystem_domain;Water domain (freshwater, salt water)
+Water_category;Ecosystem type (lake, river, transitional, marine)
+Kingdom;Response organism kingdom (plant, animal)
+Life_water;Habitat of response organism in water column (pelagic, benthic)
+Response_group;Response organism group (phytoplankton, benthic flora, zooplankton, benthic invertebrate, fish)
+Response_variable;Specification of response organism variable
+Response_type;Category of response variable (biodiversity, biomass/abundance or functional traits)
+Stressor1_group;Stressor 1 type (nutrient, thermal, morphological, hydrological, physico-chemical, toxic, light stressors) 
+Stressor1_variable;Specification of stressor 1 type
+Stressor2_group;Stressor 2 type (nutrient, thermal, morphological, hydrological, physico-chemical, toxic, light stressors) 
+Stressor2_variable;Specification of stressor 2 type
+Stressor_pair;Paired stressor types
+Low_second_gradient_left;Share of the second stressor gradient length left in the lower partial gradient after gradient split
+Upp_second_gradient_left;Share of the second stressor gradient length left in the upper partial gradient after gradient split
