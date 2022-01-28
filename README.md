@@ -1,4 +1,4 @@
-# Stressor gradient analysis
+# Multiple stressor gradient analysis
 
 This repository contains the collection of 158 paired-stressor response cases, the modelling results, as well as the R-codes used in the study:
 
