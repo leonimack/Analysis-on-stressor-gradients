@@ -1,6 +1,6 @@
-# Multiple stressor gradient analysis
+# <b>Multiple stressor gradient analysis
 
-This repository contains the collection of 158 paired-stressor response cases, the modelling results, as well as the R-codes used in the study:
+This repository contains the <b>collection of 158 paired-stressor response cases<b>, <b>the modelling results<b>, as well as the <b>R-codes<b> used in the study:
 
 Mack et al. (in review). The length of stressor gradients affects observed multiple-stressor effects. 
 
