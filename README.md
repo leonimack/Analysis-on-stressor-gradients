@@ -9,11 +9,10 @@ Mack et al. (in review). The length of stressor gradients affects observed multi
 
 2) The folder "Metadata and results" includes
 
-    a) the metadata and contacts/references for single cases ("01_Metadata.csv") and the file "01_Legend_Metadata.csv" specifying the column-headers, and \n    
+    a) the metadata and contacts/references for single cases ("01_Metadata.csv") and the file "01_Legend_Metadata.csv" specifying the column-headers, and   
     b) the modelling results of the study ("02_Modelling_results.csv") and the file "02_Legend_Modelling_results.csv" specifying the column-headers.
 
 3) The folder "R_scripts" includes exemplary R-scripts on
 
-    a) the initial linear regression analysis ("Linear_regression_example.html"), and
-    
+    a) the initial linear regression analysis ("Linear_regression_example.html"), and    
     b) the stressor gradient split analysis ("Gradient_split_example.html").
