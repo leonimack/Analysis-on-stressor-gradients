@@ -1,7 +1,7 @@
 # <b>Multiple stressor gradient analysis</b>
 
 
-This repository contains the collection of <b>158 paired-stressor response cases</b>, <b>the modelling results</b>, as well as the <b>R-codes</b> used in the study:
+This repository contains the collection of 158 paired-stressor response cases, the modelling results, as well as the R-codes used in the study:
 
 Mack et al. (in review). The length of stressor gradients affects observed multiple-stressor effects. 
 
@@ -10,10 +10,10 @@ Mack et al. (in review). The length of stressor gradients affects observed multi
 
 2) The folder [<b>"Metadata and results"</b>](https://github.com/leonimack/Multiple_stressor_gradient_analysis/tree/main/Metadata%20and%20results) includes
 
-    a) the <b>metadata</b> and contacts/references for single cases ["01_Metadata"](https://github.com/leonimack/Multiple_stressor_gradient_analysis/tree/main/Metadata%20and%20results) and the file ["01_Legend_Metadata"](https://github.com/leonimack/Multiple_stressor_gradient_analysis/blob/main/Metadata%20and%20results/01_Legend_Metadata..csv) specifying the column-headers, and   
-    b) the <b>modelling results</b> of the study [("02_Modelling_results")](https://github.com/leonimack/Multiple_stressor_gradient_analysis/blob/main/Metadata%20and%20results/02_Modelling%20results.csv) and the file ["02_Legend_Modelling_results"](https://github.com/leonimack/Multiple_stressor_gradient_analysis/blob/main/Metadata%20and%20results/02_Legend_Modelling_results.csv) specifying the column-headers.
+    a) the metadata and contacts/references for single cases ["01_Metadata"](https://github.com/leonimack/Multiple_stressor_gradient_analysis/tree/main/Metadata%20and%20results) and the file ["01_Legend_Metadata"](https://github.com/leonimack/Multiple_stressor_gradient_analysis/blob/main/Metadata%20and%20results/01_Legend_Metadata..csv) specifying the column-headers, and   
+    b) the modelling results of the study [("02_Modelling_results")](https://github.com/leonimack/Multiple_stressor_gradient_analysis/blob/main/Metadata%20and%20results/02_Modelling%20results.csv) and the file ["02_Legend_Modelling_results"](https://github.com/leonimack/Multiple_stressor_gradient_analysis/blob/main/Metadata%20and%20results/02_Legend_Modelling_results.csv) specifying the column-headers.
 
-3) The folder [<b>"R_scripts"</b>](https://github.com/leonimack/Multiple_stressor_gradient_analysis/tree/main/R_scripts) includes exemplary R-scripts on
+3) The folder [<b>"R_scripts"</b>](https://github.com/leonimack/Multiple_stressor_gradient_analysis/tree/main/R_scripts) includes R-markdown files specifying
 
-    a) the initial <b>linear regression analysis</b> ("Linear_regression_example.html"), and    
-    b) the <b>stressor gradient split</b> ("Gradient_split_example.html").
+    a) the initial linear regression analysis [Linear regression example](https://github.com/leonimack/Multiple_stressor_gradient_analysis/blob/main/R_scripts/Script_Linear%20regression%20example.Rmd), and    
+    b) the stressor gradient split [Gradient split example](https://github.com/leonimack/Multiple_stressor_gradient_analysis/blob/main/R_scripts/Script_Gradient%20split%20example.Rmd).
