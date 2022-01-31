@@ -1,0 +1,451 @@
+---
+title: "Transitional monitoring, fish, Baltic Sea"
+output: 
+  html_document: 
+    code_fold: hide
+    fig_caption: yes
+    highlight: zenburn
+    theme: journal
+---
+
+# Transitional monitoring, fish, Baltic Sea
+#### Stressors: x1 = Mean nitrate, x2 = Max pH
+#### Response: y =  Platichthys CPUE 
+
+***
+### Contents:
+* 1 Data preparation
+  + 1.1 Random Forest
+  + 1.2 Dredge function
+* 2 Linear regression modelling
+  + 2.1 Data preparation
+  + 2.2 Data transformation
+  + 2.3 Stressor correlation
+  + 2.4 Modelling
+* 3 Model performance
+* 4 Interaction plot
+
+***
+
+## 1 Data preparation
+
+Load packages:
+```{r, message=FALSE, warning=FALSE}
+library("lme4")
+library("MuMIn")
+library("lmerTest")
+library("nnet")
+library("ordinal")
+library("ape")
+library("sp")
+library("emdbook")
+library("pacman")
+library("car")
+library("psych")
+library("usdm")
+library("PerformanceAnalytics")
+library(randomForest)
+library(pdp)
+```
+
+Load data:
+```{r}
+data <- read.csv("Data_prepared_Fish_year.csv", header = TRUE, sep = ";", dec = ".")
+```
+
+Display data summary:
+```{r}
+names(data)
+str(data)
+```
+
+Set some important functions (for transformation and 3D plot):
+```{r}
+estimateBC = function(x){ 
+  # function to estimate transformation parameters for continuous variable x require(car) 
+  gamma = min(x, na.rm=T) - 0.001 # offset (min value minus a small number) 
+  x = x - gamma # subtract gamma from x, so that it is strictly positive 
+  lambda = powerTransform(x~1, family="bcPower")$lambda # estimate lambda of Box-Cox transformation... 
+  xT = bcPower(x, lambda=lambda) # apply box-cox transform 
+  xT.mean = mean(xT) # mean of transformed values, for centring 
+  xT.sd = sd(xT) # sd of transformed values, for scaling 
+  # return the transformation parameters 
+  return(c(gamma=gamma, lambda=lambda, xT.mean=xT.mean, xT.sd=xT.sd)) 
+}
+
+applyBC = function(x, P=estimateBC(x)){ 
+  # function to transform continuous variable x using transformation parameters P 
+  require(car)
+  gamma = P[1] 
+  lambda = P[2] 
+  xT.mean = P[3] 
+  xT.sd = P[4] 
+  xT = bcPower(x-gamma, lambda) # apply box-cox transform 
+  xT = (xT-xT.mean)/xT.sd # centre and scale 
+  return(xT) 
+}
+
+backBC = function(xT, P){ 
+  # function to back transform transformed variable xT using transformation parameters P 
+  gamma=P[1] 
+  lambda=P[2] 
+  xT.mean=P[3] 
+  xT.sd=P[4]
+  xT.unscaled = xT*xT.sd + xT.mean 
+  x.original = exp(log(lambda*xT.unscaled + 1)/lambda) + gamma 
+  return(x.original) 
+}
+
+# function to plot the response from a fitted model
+interactionPlot = function(B, X1, X2, Y,
+                           TP=list(P.x1=if(exists("P.x1")) P.x1 else NA,
+                                   P.x2=if(exists("P.x2")) P.x2 else NA,
+                                   P.y=if(exists("P.y")) P.y else NA,
+                                   family="gaussian"),
+                           responseLab="z", x1Lab="x1", x2Lab="x2") {
+  # Function to plot interactions from fitted models.
+  # B = vector of model fixed effect coeffcients
+  # X1, X2 = vectors with values of the stressors (not transformed)
+  # Y = vector with values of the response (not transformed)
+  # TP = list of transformation parameters containing the following elements;
+  # P.x1 = output from estimateBC() for x1, or NA if no transformation applied
+  # P.x2 = output from estimateBC() for x2, or NA if no transformation applied
+  # P.y = output from estimateBC() for y, or NA if no transformation applied
+  # family = family of the generalised model. It should be one of
+  # "gaussian" (for continuous response),
+  # "poisson" (for count response),
+  # "binomial" (for binary or ordered categorical response), or
+  # NA (if you want to plot the response on the linear model scale)
+  # responseLab = label for the response variables
+  # x1Lab, x2Lab = labels for the stressor variables
+  require(emdbook)
+  if(is.numeric(X1) & is.numeric(X2)){ # X1 and X2 are both continuous
+    myF <<- function(X1=X1, X2=X2, transPar=TP) {
+      if(sum(is.na(transPar$P.x1))==0) X1 = applyBC(X1, transPar$P.x1)
+      if(sum(is.na(transPar$P.x2))==0) X2 = applyBC(X2, transPar$P.x2)
+      z = B[1] + B[2]*X1 + B[3]*X2 + B[4]*X1*X2
+      if(!is.na(transPar$family)){
+        if(transPar$family=="gaussian") z = backBC(z, transPar$P.y)
+        if(transPar$family=="poisson") z = exp(z)
+        if(transPar$family=="binomial") z = 1/(1+exp(-z))
+      }
+      return(z)
+    }
+    curve3d(myF, from=c(min(X1),min(X2)), to=c(max(X1),max(X2)),
+            sys3d="image", col=colorRampPalette(c("blue","white","red"))(64),
+            xlab=x1Lab, ylab=x2Lab, main=responseLab, varnames=c("X1","X2"))
+    points(X1, X2, pch=21, bg="grey50")
+    curve3d(myF, from=c(min(X1),min(X2)), to=c(max(X1),max(X2)), sys3d="contour",
+            add=T, labcex=1, varnames=c("X1","X2"))
+    box()
+  }
+  if(is.numeric(X1) & is.factor(X2)){ # X1 continuous, X2 is a factor
+    myF <<- function(X1, X2=0, transPar=TP) {
+      if(sum(is.na(TP$P.x1))==0) X1 = applyBC(X1, TP$P.x1)
+      z = B[1] + B[2]*X1 + B[3]*X2 + B[4]*X1*X2
+      if(!is.na(TP$family)){
+        if(TP$family=="gaussian") z = backBC(z, TP$P.y)
+        if(TP$family=="poisson") z = exp(z)
+        if(TP$family=="binomial") z = 1/(1+exp(-z))
+      }
+      return(z)
+    }
+    curve(myF(X1=x, X2=0), from=min(X1), to=max(X1), col="blue", lwd=2, xlab=x1Lab, ylab=responseLab,
+          ylim=if(is.numeric(y) & !is.na(TP$family)) range(y) else NULL)
+    curve(myF(X1=x, X2=1), add=T, col="red", lwd=2, lty=2)
+    rug(x1)
+    legend("topright", legend=levels(X2), lty=1:2, lwd=2, col=c("blue","red"), title=x2Lab)
+  }
+  if(is.factor(X1) & is.numeric(X2)){ # X1 is a factor, X2 continuous
+    myF <<- function(X1=0, X2, transPar=TP) {
+      if(sum(is.na(TP$P.x2))==0) X2 = applyBC(X2, TP$P.x2)
+      z = B[1] + B[2]*X1 + B[3]*X2 + B[4]*X1*X2
+      if(!is.na(TP$family)){
+        if(TP$family=="gaussian") z = backBC(z, TP$P.y)
+        if(TP$family=="poisson") z = exp(z)
+        if(TP$family=="binomial") z = 1/(1+exp(-z))
+      }
+      return(z)
+    }
+    curve(myF(X1=0, X2=x), from=min(X2), to=max(X2), col="blue", lwd=2, xlab=x2Lab,
+          ylab=responseLab, ylim=if(is.numeric(y) & !is.na(TP$family)) range(y) else NULL)
+    curve(myF(X1=1, X2=x), add=T, col="red", lwd=2, lty=2)
+    rug(x2)
+    legend("topright", legend=levels(X1), lty=1:2, lwd=2, col=c("blue","red"),
+           title=x1Lab)
+  }
+  if(is.factor(X1) & is.factor(X2)){ # X1 is a factor, X2 is a factor
+    z = c(B[1], B[1]+B[2], B[1]+B[3], B[1]+B[2]+B[3], sum(B))
+    names(z) = c(paste(levels(X1)[1], levels(X2)[1], sep=" / "),
+                 paste(levels(X1)[2], levels(X2)[1], sep=" / "),
+                 paste(levels(X1)[1], levels(X2)[2], sep=" / "),
+                 paste("E(", paste(levels(X1)[2], levels(X2)[2], sep=" + "), ")", sep=""),
+                 paste(levels(X1)[2], levels(X2)[2], sep=" x "))
+    #names(z) = paste(rep(levels(X1),2), rep(levels(X2),each=2), sep=" / ")
+    if(!is.na(TP$family)){
+      if(TP$family=="gaussian") z = backBC(z, TP$P.y)
+      if(TP$family=="poisson") z = exp(z)
+      if(TP$family=="binomial") z = 1/(1+exp(-z))
+    }
+    z2 = z - z[1] # z values minus the control
+    par(mfrow=c(2,1))
+    barplot(z, ylab=responseLab, xlab=paste(x1Lab,x2Lab,sep=" / "))
+    abline(h=0)
+    barplot(z2, ylab=paste(responseLab,"- control"), xlab=paste(x1Lab,x2Lab,sep=" / "))
+    abline(h=0)
+    par(mfrow=c(1,1))
+  }
+  return(NULL)
+}
+```
+
+### 1.1 Select most important stressor variables using Random Forest:
+```{r, class.source = 'fold-show'}
+rfdata <- randomForest::randomForest(Platichthys.flesus.CPUE~., data=data[c(18,3:16)], na.action=na.roughfix, ntree=1000)
+rfdata
+varImpPlot(rfdata)
+
+pdplot <- pdp::partial(rfdata, grid.resolution=30, pred.var = c("Nitrate.mean..umol.l.", "Salinity.mean..psu."), prob=T)
+plotPartial(pdplot, prob=T)
+```
+
+### 1.2 Dredge to select 2 most important stressor variables
+#### 1.2.1 Select variables x1 to x6, y and random effects:
+```{r}
+y  <-  data$Platichthys.flesus.CPUE # Response variable
+x1 <-  data$Nitrate.mean..umol.l.
+x2 <-  data$Phosphate.max..umol.l.
+x3 <-  data$Salinity.mean..psu.
+x4 <-  data$TN.max..umol.l.
+x5 <-  data$Temperature.mean...C.
+x6 <-  data$pH.max...
+
+
+RE1 <- data$Region # Random Effect 1
+RE1 <- as.factor(RE1)
+RE2 <- data$Year # Random Effect 2
+RE2 <- as.factor(RE2)
+```
+
+
+Remove cases with missing data:
+```{r}
+noMissing = !is.na(y) & !is.na(x1) & !is.na(x2) & !is.na(x3) & !is.na(x4)& !is.na(x5) & !is.na(x6) & !is.na(RE1)& !is.na(RE2) # TRUE for cases with no missing data, FALSE otherwise
+y <-       y[noMissing]
+x1 <-      x1[noMissing]
+x2 <-      x2[noMissing]
+x3 <-      x3[noMissing]
+x4 <-      x4[noMissing]
+x5 <-      x5[noMissing]
+x6 <-      x6[noMissing]
+RE1 <-     RE1[noMissing]
+RE2 <-     RE2[noMissing]
+```
+
+
+Transform variables and check transformation:
+```{r}
+P.y = estimateBC(y)
+yT = applyBC(y, P.y)
+P.y
+
+P.x1 = estimateBC(x1)
+x1T = applyBC(x1, P.x1)
+P.x1
+
+P.x2 = estimateBC(x2)
+x2T = applyBC(x2, P.x2)
+P.x2
+
+P.x3 = estimateBC(x3)
+x3T = applyBC(x3, P.x3)
+P.x3
+
+P.x4 = estimateBC(x4)
+x4T = applyBC(x4, P.x4)
+P.x4
+
+P.x5 = estimateBC(x5)
+x5T = applyBC(x5, P.x5)
+P.x5
+
+P.x6 = estimateBC(x6)
+x6T = applyBC(x6, P.x6)
+P.x6
+
+par(mfrow=c(2,4))
+hist(y, br=12, col="gold3")
+hist(x1, br=12, col="gold3")
+hist(x2, br=12, col="gold3")
+hist(x3, br=12, col="gold3")
+hist(yT, br=12, col="gold3")
+hist(x1T, br=12, col="gold3")
+hist(x2T, br=12, col="gold3")
+hist(x3T, br=12, col="gold3")
+
+par(mfrow=c(2,3))
+hist(x4, br=12, col="gold3")
+hist(x5, br=12, col="gold3")
+hist(x6, br=12, col="gold3")
+hist(x4T, br=12, col="gold3")
+hist(x5T, br=12, col="gold3")
+hist(x6T, br=12, col="gold3")
+
+shapiro.test(y)   # a high p-value = close to normal distribution
+shapiro.test(yT)
+shapiro.test(x1)   # a high p-value = close to normal distribution
+shapiro.test(x1T)
+shapiro.test(x2)   # a high p-value = close to normal distribution
+shapiro.test(x2T)
+shapiro.test(x3)   # a high p-value = close to normal distribution
+shapiro.test(x3T)
+shapiro.test(x4)   # a high p-value = close to normal distribution
+shapiro.test(x4T)
+shapiro.test(x5)   # a high p-value = close to normal distribution
+shapiro.test(x5T)
+shapiro.test(x6)   # a high p-value = close to normal distribution
+shapiro.test(x6T)
+```
+
+Use dredge function to identify the two most important stressors incl. interaction:
+```{r, class.source = 'fold-show'}
+Mtot = lm(yT ~ (x1T+x2T+x3T+x4T+x5T+x6T)^2) # all main effects and 2-way interactions
+summary(Mtot)
+options(na.action = "na.fail") # needed for dredge
+d = dredge(Mtot, trace=2, m.lim = c(0, 3)) # m.lim means consider only models with 0 to 3 fixed effects  
+d # print model comparison table 
+subset(d, delta <= 2) # print top ranked models (dAIC <= 2)
+summary(get.models(d, 1)[[1]]) # summary of the top model (lowest AIC)
+```
+
+## 2 Linear regression modelling
+### 2.1 Prepare: Load stressor and response variables:
+```{r}
+y  <-  data$Platichthys.flesus.CPUE # Response variable
+x1 <-  data$Nitrate.mean..umol.l. # Stressor 1
+x2 <-  data$pH.max... # Stressor 2
+
+RE1 <- data$Region # Random Effect 1
+RE1 <- as.factor(RE1)
+RE2 <- data$Year # Random Effect 2
+RE2 <- as.factor(RE2)
+```
+
+
+Remove cases with missing data:
+```{r}
+noMissing = !is.na(y) & !is.na(x1) & !is.na(x2) & !is.na(RE1)& !is.na(RE2) # TRUE for cases with no missing data, FALSE otherwise
+y <-       y[noMissing]
+x1 <-      x1[noMissing]
+x2 <-      x2[noMissing]
+
+RE1 <-     RE1[noMissing]
+RE2 <-     RE2[noMissing]
+```
+
+
+Show sample size for the analysis and number of regions/years:
+```{r, class.source = 'fold-show'}
+length(y)
+length(levels(RE1)) # print number of sites in the analysis
+length(levels(RE2)) # print number of years in the analysis
+```
+
+Plot selected variables and check for outliers: 
+```{r}
+par(mfrow=c(1,3))
+plot(x1,x2, pch=16, col=RE1)
+plot(x1,y, pch=16, col=RE1)
+plot(x2,y, pch=16, col=RE1)
+
+
+boxplot(y,xlab="y", col="gold3")
+boxplot(x1, xlab="x1", col="gold3")
+boxplot(x2, xlab="x2", col="gold3")
+par(mfrow=c(1,1))
+```
+
+### 2.2 Transform variables and check transformation:
+```{r}
+P.y = estimateBC(y)
+yT = applyBC(y, P.y)
+P.y
+
+P.x1 = estimateBC(x1)
+x1T = applyBC(x1, P.x1)
+P.x1
+
+P.x2 = estimateBC(x2)
+x2T = applyBC(x2, P.x2)
+P.x2
+
+
+par(mfrow=c(2,3))
+hist(y, br=12, col="gold3")
+hist(x1, br=12, col="gold3")
+hist(x2, br=12, col="gold3")
+
+hist(yT, br=12, col="gold3")
+hist(x1T, br=12, col="gold3")
+hist(x2T, br=12, col="gold3")
+
+
+shapiro.test(y)   # a high p-value = close to normal distribution
+shapiro.test(yT)
+shapiro.test(x1)   # a high p-value = close to normal distribution
+shapiro.test(x1T)
+shapiro.test(x2)   # a high p-value = close to normal distribution
+shapiro.test(x2T)
+```
+
+### 2.3 Check correlation between stressors:
+```{r, warning=FALSE}
+dataT    <- cbind.data.frame(yT, x1T, x2T)
+chart.Correlation(dataT[-c(4)], histogram=TRUE, pch=19, method = "spearman") # Spearman correlation should be < 0.7
+```
+
+
+Plot the main effects:
+```{r, warning=FALSE}
+par(mfrow=c(2,2))
+plot(y ~ x1, pch=16, col=RE1)
+plot(yT ~ x1, pch=16, col=RE1)
+
+plot(y ~ x2, pch=16, col=RE1)
+plot(yT ~ x2, pch=16, col=RE1)
+par(mfrow=c(1,1))
+```
+
+
+### 2.3 Calculate GLMM including random effect:
+```{r, warning=FALSE, class.source = 'fold-show'}
+M = glm(yT ~ x1T*x2T)
+r = residuals(M, type="response")
+summary(M)
+```
+
+## 3 Model performance:
+```{r, warning=FALSE, class.source = 'fold-show'}
+r.squaredGLMM(M)
+
+shapiro.test(r) # test for normality of residuals --> p value should be >0.05
+par(mfrow=c(1,2))
+hist(r, col="gold3") # histogram of residuals --> should look normally distributed
+qqnorm(r, pch=16, col="gold3"); qqline(r) # plot residuals against normal quantiles --> points should be close to line
+par(mfrow=c(1,1))
+
+B = coef(M)
+```
+
+Check importance of interaction:
+```{r, class.source = 'fold-show'}
+(summary(M)$coef[,1]/summary(M)$coef[,2])["x1T:x2T"]    # z score of interaction (high posiive value --> important effect)
+AIC(update(M, ~.-x1T:x2T)) - AIC(M)                     # change in AIC (high positive values --> important effect)
+r.squaredGLMM(update(M, ~.-x1T:x2T)) - r.squaredGLMM(M) # change in R2 (negative --> important effect)
+```
+
+## 4 Draw interaction plot:
+```{r, class.source = 'fold-show'}
+myTP = list(P.x1=P.x1, P.x2=P.x2, P.y=P.y, family=NA)
+interactionPlot(B=B, X1=x1, X2=x2, Y=y, TP=myTP, responseLab="z (model scale)", x1Lab="x1", x2Lab="x2")
+```

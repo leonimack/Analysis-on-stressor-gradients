@@ -1,0 +1,192 @@
+---
+title: "Gradient analysis - Transitional monitoring, fish, Baltic Sea"
+output: 
+  html_document: 
+    code_fold: hide
+    fig_caption: yes
+    highlight: zenburn
+    theme: journal
+---
+
+***
+### Contents
+* 1 Data preparation
+* 2 Data transformation
+* 3 Gradient split
+  + 3.1 Modelling of original dataset
+  + 3.2 Create total, lower and upper gradient
+* 4 Modelling
+  + 4.1 Plot main effects & Check correlation between stressors
+  + 4.2 GLMM of full and partial models
+* 5 Loss in second stressor gradient length
+
+***
+
+## 1 Data preparation
+
+Load packages:
+```{r, message=FALSE, warning=FALSE}
+require("lme4")
+require("MuMIn")
+require("lmerTest")
+require("nnet")
+require("ordinal")
+require("ape")
+require("sp")
+require("car")
+require("emdbook")
+require("pacman")
+p_load("psych")
+require("usdm")
+library("PerformanceAnalytics")
+```
+
+Load data and display summary:
+```{r, warning=FALSE}
+data <- read.csv("Case335.csv", header = TRUE, sep = ";", dec = ".")
+str(data)
+```
+
+Define variables
+```{r, warning=FALSE}
+# define the response and explanatory variables ----
+y <-   data$y # response
+x1 <-  data$x1 # key stressor 1
+x2 <-  data$x2 # key stressor 2
+RE1 <- data$RandomEffect
+```
+
+## 2 Data transformation ----
+```{r, message=FALSE, warning=FALSE}
+estimateBC = function(x){ # function to estimate transformation parameters for continuous variable x
+  gamma       = min(x, na.rm=T) - 0.001 # offset (min value minus a small number) 
+  x           = x - gamma # subtract gamma from x, so that it is strictly positive 
+  lambda      = powerTransform(x~1, family="bcPower")$lambda # estimate lambda of Box-Cox transformation... 
+  xT          = bcPower(x, lambda=lambda) # apply box-cox transform 
+  xT.mean     = mean(xT) # mean of transformed values, for centring 
+  xT.sd       = sd(xT) # sd of transformed values, for scaling  
+  # return the transformation parameters 
+  return(c(gamma=gamma, lambda=lambda, xT.mean=xT.mean, xT.sd=xT.sd)) }
+
+applyBC = function(x, P=estimateBC(x)){ # function to transform continuous variable x using transformation parameters P 
+  gamma = P[1] 
+  lambda = P[2] 
+  xT.mean = P[3] 
+  xT.sd = P[4] 
+  xT = bcPower(x-gamma, lambda) # apply box-cox transform 
+  xT = (xT-xT.mean)/xT.sd # centre and scale 
+  return(xT) }
+
+P.y = estimateBC(y)
+yT = applyBC(y, P.y)
+P.y
+
+P.x1 = estimateBC(x1)
+x1T = applyBC(x1, P.x1)
+P.x1
+
+P.x2 = estimateBC(x2)
+x2T = applyBC(x2, P.x2)
+P.x2
+```
+
+## 3 Gradient split
+### 3.1 Modelling of original dataset
+```{r, warning=FALSE}
+M = lmer(yT ~ x1T*x2T + (1|RE1), REML = FALSE)
+summary(M)
+r.squaredGLMM(M)
+```
+
+### 3.2 Create total, lower and upper gradient
+```{r, warning=FALSE}
+originaldf    <- cbind.data.frame(yT, x1T, x2T, RE1)
+
+originaldf   <- originaldf[order(originaldf$x1T),]
+toDelete <- seq(1, nrow(originaldf), 2)
+totdf <- originaldf[ toDelete ,]
+
+lowdf    <- originaldf[originaldf$x1T <= median(originaldf$x1T),]
+highdf   <- originaldf[originaldf$x1T >  median(originaldf$x1T),]
+
+str(totdf)
+str(lowdf)
+str(highdf)
+```
+
+Compare full and partial datasets:
+```{r, warning=FALSE}
+totsum <- cbind("Total gradient", length(totdf$yT), min(totdf$yT), max(totdf$yT),  min(totdf$x1T), max(totdf$x1T), min(totdf$x2T), max(totdf$x2T))
+lowsum <- cbind("Low gradient", length(lowdf$yT), min(lowdf$yT), max(lowdf$yT),  min(lowdf$x1T), max(lowdf$x1T), min(lowdf$x2T), max(lowdf$x2T))
+highsum <- cbind("High gradient", length(highdf$yT), min(highdf$yT), max(highdf$yT),  min(highdf$x1T), max(highdf$x1T), min(highdf$x2T), max(highdf$x2T))
+
+dataset.comp <- setNames(rbind.data.frame(totsum, lowsum, highsum), c("Dataset", "sample.size", "min.y", "max.y", "min.x1", "max.x1", "min.x2", "max.x2"))
+dataset.comp
+```
+
+## 4 Modelling
+
+### 4.1 Plot main effects & Check correlation between stressors
+```{r, warning=FALSE}
+chart.Correlation(totdf[-c(4,5)], histogram=TRUE, pch=19, method = "spearman")
+chart.Correlation(lowdf[-c(4,5)], histogram=TRUE, pch=19, method = "spearman")
+chart.Correlation(highdf[-c(4,5)], histogram=TRUE, pch=19, method = "spearman")
+```
+
+### 4.2 GLMM of full and partial gradients
+```{r, warning=FALSE}
+Mtot <-  lmer(data=totdf, yT ~ x1T*x2T + (1|RE1), REML = FALSE)
+summary(Mtot)
+R2tot <- r.squaredGLMM(Mtot)
+R2tot
+
+Mlow <-  lmer(data=lowdf, yT ~ x1T*x2T + (1|RE1), REML = FALSE)
+summary(Mlow)
+R2low <- r.squaredGLMM(Mlow)
+R2low
+
+Mhigh <-  lmer(data=highdf, yT ~ x1T*x2T + (1|RE1), REML = FALSE)
+summary(Mhigh)
+R2high <- r.squaredGLMM(Mhigh)
+R2high
+```
+
+look at residuals:
+```{r, warning=FALSE}
+rtot <-  residuals(Mtot, type="response")
+shapiro.test(rtot) # test for normality of residuals --> p value should be high
+par(mfrow=c(1,2))
+hist(rtot) # histogram of residuals
+qqnorm(rtot); qqline(rtot) # plot residuals against normal quantiles
+par(mfrow=c(1,1))
+plot(fitted(Mtot), rtot) # fitted vs residuals plot
+Ptot <- cor.test(rtot, fitted(Mtot)) # test correlation between residuals and fitted
+Ptot$estimate^2
+
+rlow <-  residuals(Mlow, type="response")
+shapiro.test(rlow) # test for normality of residuals --> p value should be high
+par(mfrow=c(1,2))
+hist(rlow) # histogram of residuals
+qqnorm(rlow); qqline(rlow) # plot residuals against normal quantiles
+par(mfrow=c(1,1))
+plot(fitted(Mlow), rlow) # fitted vs residuals plot
+Plow <- cor.test(rlow, fitted(Mlow)) # test correlation between residuals and fitted
+Plow$estimate^2
+
+rhigh <-  residuals(Mhigh, type="response")
+shapiro.test(rhigh) # test for normality of residuals --> p value should be high
+par(mfrow=c(1,2))
+hist(rhigh) # histogram of residuals
+qqnorm(rhigh); qqline(rhigh) # plot residuals against normal quantiles
+par(mfrow=c(1,1))
+plot(fitted(Mhigh), rhigh) # fitted vs residuals plot
+Phigh <- cor.test(rhigh, fitted(Mhigh)) # test correlation between residuals and fitted
+Phigh$estimate^2
+```
+
+## 5 Loss in second stressor gradient length
+```{r, warning=FALSE}
+minmax <- function(x, y){(max(x)-min(x))/(max(y)-min(y))}
+minmax(lowdf$x1T, totdf$x1T)
+minmax(highdf$x1T, totdf$x1T)
+```
